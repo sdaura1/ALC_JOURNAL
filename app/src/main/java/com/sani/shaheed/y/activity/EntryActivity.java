@@ -66,28 +66,30 @@ public class EntryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entry);
 
+        // inittialization of firestore settings
         settings = new FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(true)
                 .build();
 
-
+        // initialization of firebase Auth and also getting a current user
         mAuth = FirebaseAuth.getInstance();
         mCurrentUser = mAuth.getCurrentUser();
 
-
+        // initialization of firebase firestore, storage, storagereference and hashmap for data to put in firestore
+        fStorage = FirebaseStorage.getInstance();
         storageReference = fStorage.getReference();
         firestoreRef = FirebaseFirestore.getInstance();
-        fStorage = FirebaseStorage.getInstance();
         firestoreData = new HashMap<>();
 
-
+        // initialization of widgets
         mSelectImage = findViewById(R.id.imgBtn);
         mEntryTitle = findViewById(R.id.titleField);
         mEntryContent = findViewById(R.id.contentField);
         mAddEntryBtn = findViewById(R.id.addBtn);
-
         mProgress = new ProgressDialog(this);
 
+
+        // checking of there's a network connection via wireless or mobile data
         if (isNetworkConnected() || isWifiConnected()) {
             Toast.makeText(this, "Yes you can post", Toast.LENGTH_SHORT).show();
         } else {
@@ -102,6 +104,7 @@ public class EntryActivity extends AppCompatActivity {
                     }).setIcon(R.drawable.warning).show();
         }
 
+        // selecting image from the device gallery
         mSelectImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,6 +126,7 @@ public class EntryActivity extends AppCompatActivity {
         });
     }
 
+    // method for creating a new entry into firestore
     private void createEntry() {
 
         mProgress.setMessage("Inserting to Diary....");
@@ -132,8 +136,10 @@ public class EntryActivity extends AppCompatActivity {
         if(!TextUtils.isEmpty(the_title) && !TextUtils.isEmpty(contents) && mImageUri != null){  //Check if all content is provided
             mProgress.show();
 
+            // creating path for storing image
             StorageReference filepath = storageReference.child("pictures/").child(mImageUri.getLastPathSegment()); // Provide Firebase filepath
 
+            // saving the rest of the data if the file (image) upload is successful
             filepath.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() { //Add file to Firebase
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -146,12 +152,7 @@ public class EntryActivity extends AppCompatActivity {
                     firestoreData.put("UID", mCurrentUser.getUid());
                     firestoreData.put("Date", new Date().toString().substring(0, 10) + new Date().toString().substring(23, 28));
 
-//                    newEntry.child("title").setValue(the_title);
-//                    newEntry.child("content").setValue(contents);
-//                    newEntry.child("picture").setValue(dowloadUri.toString());
-//                    newEntry.child("uid").setValue(mCurrentUser.getUid());
-//                    newEntry.child("date").setValue(new Date().toString().substring(0, 10) + new Date().toString().substring(23, 28));
-
+                    //saving the rest of the data in a collection in firebase that is pointed by a user document
                     firestoreRef.collection("Journal Entry").document(mCurrentUser.toString()).collection("My Entry").document().set(firestoreData)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">TODO APP</string>
+    <string name="todoItem">Todo</string>
+    <string name="highPriority">High</string>
+    <string name="mediumPriority">Medium</string>
+    <string name="lowPriority">Low</string>
+    <string name="priority">PRIORITY</string>
+    <string name="save">Save</string>
+</resources>
